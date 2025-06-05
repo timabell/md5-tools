@@ -33,7 +33,7 @@ pub static MD5: HashAlgorithm = HashAlgorithm {
     empty: "d41d8cd98f00b204e9800998ecf8427e",
     invalid: "00000000000000000000000000000000",
     invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-    pattern: r"^(?-u)([0-9a-f]{32}) ([ *])(.+)$",
+    pattern: r"^(?-u)(\\)?([0-9a-f]{32}) ([ *])(.+)$",
     suffix: ".md5",
 };
 

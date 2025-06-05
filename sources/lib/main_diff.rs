@@ -528,9 +528,20 @@ fn load_from_stream<Stream: io::Read>(
             }
 
             if _pattern.is_match(&_buffer) {
-                let _split = _buffer.iter().position(|&_byte| _byte == b' ').unwrap();
+                // Check if the line starts with a backslash (escaped format)
+                let _is_escaped = _buffer.len() > 0 && _buffer[0] == b'\\';
 
-                let _hash = &_buffer[.._split];
+                // Skip the backslash if present
+                let _start_offset = if _is_escaped { 1 } else { 0 };
+
+                // Find the space that separates hash from path
+                let _split = _buffer[_start_offset..]
+                    .iter()
+                    .position(|&_byte| _byte == b' ')
+                    .unwrap()
+                    + _start_offset;
+
+                let _hash = &_buffer[_start_offset.._split];
                 let mut _path = &_buffer[_split + 2..];
 
                 if (_path.len() >= 2) && &_path[0..2] == b"./" {
@@ -544,7 +555,25 @@ fn load_from_stream<Stream: io::Read>(
                 }
 
                 let _hash = str::from_utf8(_hash).unwrap();
-                let _path = ffi::OsStr::from_bytes(_path);
+
+                let _path_bytes = if _is_escaped {
+                    let mut _unescaped = Vec::with_capacity(_path.len());
+                    let mut _i = 0;
+                    while _i < _path.len() {
+                        if _i + 1 < _path.len() && _path[_i] == b'\\' && _path[_i + 1] == b'\\' {
+                            _unescaped.push(b'\\');
+                            _i += 2;
+                        } else {
+                            _unescaped.push(_path[_i]);
+                            _i += 1;
+                        }
+                    }
+                    _unescaped
+                } else {
+                    _path.to_vec()
+                };
+
+                let _path = ffi::OsStr::from_bytes(&_path_bytes);
 
                 let _hash = _tokens.include_hash(_hash);
                 let _path = _tokens.include_path(_path);
