@@ -111,8 +111,7 @@ pub fn main() -> (Result<(), io::Error>) {
     }
 
     if !_format_flags.path {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        return Err(io::Error::other(
             "[d9b3891e]  paths are mandatory",
         ));
     }
@@ -193,7 +192,7 @@ pub fn main_0() -> ! {
     }
 }
 
-fn report_source_statistics(_tag: char, _source: &Source, _statistics: &SourceStatistics) -> () {
+fn report_source_statistics(_tag: char, _source: &Source, _statistics: &SourceStatistics) {
     println!();
     println!("##  Dataset ({}) statistics", _tag);
     println!(
@@ -248,7 +247,7 @@ fn report_source_statistics(_tag: char, _source: &Source, _statistics: &SourceSt
     println!("##    * source: `{}`", _source.path.display());
 }
 
-fn report_diff_statistics(_tag_left: char, _tag_right: char, _diff: &Diff) -> () {
+fn report_diff_statistics(_tag_left: char, _tag_right: char, _diff: &Diff) {
     println!();
     println!("##  Diff statistics ({}) vs ({})", _tag_left, _tag_right);
     println!("##    * hashes");
@@ -303,7 +302,7 @@ fn report_diff_statistics(_tag_left: char, _tag_right: char, _diff: &Diff) -> ()
     );
 }
 
-fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens: &Tokens) -> () {
+fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens: &Tokens) {
     let mut _unique_hashes_left: Vec<(char, char, PathKey, HashKey)> = Vec::new();
     let mut _unique_hashes_right: Vec<(char, char, PathKey, HashKey)> = Vec::new();
     let mut _conflicting_paths: Vec<(char, char, PathKey, HashKey)> = Vec::new();
@@ -337,16 +336,13 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
     }
 
     for &_path in _diff.paths.iter() {
-        match _diff.by_path.get(&_path).unwrap() {
-            DiffEntry::Conflicting(_hashes_left, _hashes_right) => {
-                for &_hash in _hashes_left.iter() {
-                    _conflicting_paths.push(('!', _tag_left, _path, _hash))
-                }
-                for &_hash in _hashes_right.iter() {
-                    _conflicting_paths.push(('!', _tag_right, _path, _hash))
-                }
+        if let DiffEntry::Conflicting(_hashes_left, _hashes_right) = _diff.by_path.get(&_path).unwrap() {
+            for &_hash in _hashes_left.iter() {
+                _conflicting_paths.push(('!', _tag_left, _path, _hash))
             }
-            _ => (),
+            for &_hash in _hashes_right.iter() {
+                _conflicting_paths.push(('!', _tag_right, _path, _hash))
+            }
         }
     }
 
@@ -354,7 +350,7 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
         _pairs: &mut Vec<(char, char, PathKey, HashKey)>,
         _tokens: &Tokens,
         _sort_by_path: bool,
-    ) -> () {
+    ) {
         println!();
         if _sort_by_path {
             _pairs.sort_unstable_by_key(|_x| {
@@ -491,15 +487,14 @@ fn load(
         }
         let _exit = _filter.wait()?;
         if _outcome.is_ok() && !_exit.success() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "[7fadf032]  filter failed",
             ));
         }
 
-        return _outcome;
+        _outcome
     } else {
-        return load_from_stream(&mut _file, _path, _tokens, _pattern, _zero);
+        load_from_stream(&mut _file, _path, _tokens, _pattern, _zero)
     }
 }
 
@@ -543,7 +538,7 @@ fn load_from_stream<Stream: io::Read>(
                 if (_path.len() >= 2) && &_path[0..2] == b"./" {
                     _path = &_path[2..];
                 }
-                if (_path.len() >= 1) && &_path[0..1] == b"/" {
+                if (!_path.is_empty()) && &_path[0..1] == b"/" {
                     _path = &_path[1..];
                 }
                 if _path.is_empty() {
@@ -571,8 +566,7 @@ fn load_from_stream<Stream: io::Read>(
                         ffi::OsStr::from_bytes(&_buffer)
                     );
                 }
-                return Err(io::Error::new(
-                    io::ErrorKind::Other,
+                return Err(io::Error::other(
                     "[1bd51464]  invalid record line syntax",
                 ));
             }
@@ -584,7 +578,7 @@ fn load_from_stream<Stream: io::Read>(
         records: _records,
     };
 
-    return Ok(_source);
+    Ok(_source)
 }
 
 fn index<'a>(_source: &'a Source, _tokens: &'a Tokens) -> (SourceIndex<'a>, SourceStatistics) {
@@ -596,7 +590,7 @@ fn index<'a>(_source: &'a Source, _tokens: &'a Tokens) -> (SourceIndex<'a>, Sour
         HashMap::with_capacity(_records.len());
 
     let mut _records_count = 0;
-    for (_index, _record) in _records.iter().enumerate() {
+    for _record in _records.iter() {
         _index_by_hash
             .entry(_record.hash)
             .or_default()
@@ -664,7 +658,7 @@ fn index<'a>(_source: &'a Source, _tokens: &'a Tokens) -> (SourceIndex<'a>, Sour
         duplicate_paths: _duplicate_paths,
     };
 
-    return (_index, _statistics);
+    (_index, _statistics)
 }
 
 fn diff(
@@ -814,7 +808,9 @@ fn diff(
         _distinct_paths += 1;
     }
 
-    let _diff = Diff {
+    
+
+    Diff {
         hashes: _hashes,
         paths: _paths,
         by_hash: _diff_by_hash,
@@ -833,9 +829,7 @@ fn diff(
             unique_left: _unique_paths_left,
             unique_right: _unique_paths_right,
         },
-    };
-
-    return _diff;
+    }
 }
 
 impl Tokens {
@@ -853,61 +847,61 @@ impl Tokens {
         };
         _tokens.hash_key_empty = _tokens.include_hash(_hash_for_empty);
         _tokens.hash_key_invalid = _tokens.include_hash(_hash_for_invalid);
-        return _tokens;
+        _tokens
     }
 
     fn include_hash(&mut self, _token: &HashValueRef) -> (HashKey) {
         let _token = HashValue::from(_token);
         if let Some(&_key) = self.hashes_index.get(&_token) {
-            return _key;
+            _key
         } else {
             let _token = Rc::new(_token);
             let _key = self.hashes.len();
             self.hashes.push(Rc::clone(&_token));
             self.hashes_index.insert(Rc::clone(&_token), _key);
-            return _key;
+            _key
         }
     }
 
     fn include_path(&mut self, _token: &PathValueRef) -> (HashKey) {
         let _token = PathValue::from(_token);
         if let Some(&_key) = self.paths_index.get(&_token) {
-            return _key;
+            _key
         } else {
             let _token = Rc::new(_token);
             let _key = self.paths.len();
             self.paths.push(Rc::clone(&_token));
             self.paths_index.insert(Rc::clone(&_token), _key);
-            return _key;
+            _key
         }
     }
 
     fn select_hash(&self, _key: HashKey) -> (&HashValueRef) {
-        return self.hashes.get(_key).unwrap().as_ref();
+        self.hashes.get(_key).unwrap().as_ref()
     }
 
     fn select_path(&self, _key: PathKey) -> (&PathValueRef) {
-        return self.paths.get(_key).unwrap().as_ref();
+        self.paths.get(_key).unwrap().as_ref()
     }
 
     fn order_of_hash(&self, _key: HashKey) -> (TokenOrder) {
-        return self.hashes_order[_key];
+        self.hashes_order[_key]
     }
 
     fn order_of_path(&self, _key: PathKey) -> (TokenOrder) {
-        return self.paths_order[_key];
+        self.paths_order[_key]
     }
 
-    fn sort(&mut self) -> () {
+    fn sort(&mut self) {
         let mut _hashes = self
             .hashes
             .iter()
-            .map(|_token| Rc::as_ref(_token))
+            .map(Rc::as_ref)
             .collect::<Vec<&HashValue>>();
         let mut _paths = self
             .paths
             .iter()
-            .map(|_token| Rc::as_ref(_token))
+            .map(Rc::as_ref)
             .collect::<Vec<&PathValue>>();
 
         let mut _hashes_order = Vec::new();

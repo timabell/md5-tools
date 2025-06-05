@@ -16,7 +16,7 @@ pub fn main() -> (Result<(), io::Error>) {
         path: true,
     };
 
-    let mut _nice_level = 19 as i8;
+    let mut _nice_level = 19_i8;
 
     {
         let mut _parser = argparse::ArgumentParser::new();
@@ -56,8 +56,8 @@ pub fn main() -> (Result<(), io::Error>) {
             break;
         }
 
-        if (_metadata.mode() & (libc::S_IFMT as u32)) == (libc::S_IFREG as u32) {
-            let _hash = if (_metadata.file_size() > 0) || (_metadata.nlink() <= 1) {
+        if (_metadata.mode() & libc::S_IFMT) == libc::S_IFREG {
+            if (_metadata.file_size() > 0) || (_metadata.nlink() <= 1) {
                 _hash_buffer.clear();
                 digest(_hashes_flags.algorithm, &mut _record, &mut _hash_buffer)?;
             } else {
@@ -93,7 +93,7 @@ pub fn main() -> (Result<(), io::Error>) {
         _input = _record.finish()?;
     }
 
-    return Ok(());
+    Ok(())
 }
 
 pub fn main_0() -> ! {

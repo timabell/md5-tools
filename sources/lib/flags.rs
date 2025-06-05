@@ -37,7 +37,7 @@ pub struct CreateFlags {
 }
 
 impl<'a> CreateFlags {
-    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) -> () {
+    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) {
         _parser
             .refer(&mut self.source_path)
             .add_argument("source", argparse::Parse, "source file or folder")
@@ -176,7 +176,9 @@ impl<'a> CreateFlags {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Default)]
 pub enum CreateBatchOrder {
+    #[default]
     Index,
     Inode,
     InodeAndSizeBuckets,
@@ -184,11 +186,6 @@ pub enum CreateBatchOrder {
     Random,
 }
 
-impl Default for CreateBatchOrder {
-    fn default() -> (Self) {
-        CreateBatchOrder::Index
-    }
-}
 
 impl argparse::FromCommandLine for CreateBatchOrder {
     fn from_argument(_value: &str) -> (Result<CreateBatchOrder, String>) {
@@ -215,7 +212,7 @@ impl Default for HashesFlags {
 }
 
 impl<'a> HashesFlags {
-    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) -> () {
+    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) {
         _parser
             .refer(&mut self.algorithm)
             .add_option(
@@ -283,7 +280,7 @@ pub struct HashesFormatFlags {
 }
 
 impl<'a> HashesFormatFlags {
-    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) -> () {
+    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) {
         _parser
             .refer(&mut self.zero)
             .add_option(
@@ -309,7 +306,7 @@ pub struct CompressionFlags {
 }
 
 impl<'a> CompressionFlags {
-    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) -> () {
+    pub fn argparse(&'a mut self, _parser: &mut argparse::parser::ArgumentParser<'a>) {
         _parser
             .refer(&mut self.algorithm)
             .add_option(
@@ -361,7 +358,9 @@ impl<'a> CompressionFlags {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Default)]
 pub enum CompressionAlgorithm {
+    #[default]
     None,
     Gzip,  // https://www.gzip.org/
     Bzip2, // http://sourceware.org/bzip2/
@@ -373,8 +372,3 @@ pub enum CompressionAlgorithm {
     Zstd,  // https://github.com/facebook/zstd
 }
 
-impl Default for CompressionAlgorithm {
-    fn default() -> (Self) {
-        CompressionAlgorithm::None
-    }
-}

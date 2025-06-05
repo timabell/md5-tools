@@ -13,17 +13,17 @@ pub fn digest<Input: io::Read>(
     _output: &mut Vec<u8>,
 ) -> (io::Result<()>) {
     match _hash.kind {
-        HashAlgorithmKind::MD5 => return digest_0::<md5::Md5, _>(_input, _output),
-        HashAlgorithmKind::SHA1 => return digest_0::<sha1::Sha1, _>(_input, _output),
-        HashAlgorithmKind::SHA2_224 => return digest_0::<sha2::Sha224, _>(_input, _output),
-        HashAlgorithmKind::SHA2_256 => return digest_0::<sha2::Sha256, _>(_input, _output),
-        HashAlgorithmKind::SHA2_384 => return digest_0::<sha2::Sha384, _>(_input, _output),
-        HashAlgorithmKind::SHA2_512 => return digest_0::<sha2::Sha512, _>(_input, _output),
-        HashAlgorithmKind::SHA3_224 => return digest_0::<sha3::Sha3_224, _>(_input, _output),
-        HashAlgorithmKind::SHA3_256 => return digest_0::<sha3::Sha3_256, _>(_input, _output),
-        HashAlgorithmKind::SHA3_384 => return digest_0::<sha3::Sha3_384, _>(_input, _output),
-        HashAlgorithmKind::SHA3_512 => return digest_0::<sha3::Sha3_512, _>(_input, _output),
-        HashAlgorithmKind::GIT_SHA1 => return digest_git_sha1::<_>(_input, _output),
+        HashAlgorithmKind::MD5 => digest_0::<md5::Md5, _>(_input, _output),
+        HashAlgorithmKind::SHA1 => digest_0::<sha1::Sha1, _>(_input, _output),
+        HashAlgorithmKind::SHA2_224 => digest_0::<sha2::Sha224, _>(_input, _output),
+        HashAlgorithmKind::SHA2_256 => digest_0::<sha2::Sha256, _>(_input, _output),
+        HashAlgorithmKind::SHA2_384 => digest_0::<sha2::Sha384, _>(_input, _output),
+        HashAlgorithmKind::SHA2_512 => digest_0::<sha2::Sha512, _>(_input, _output),
+        HashAlgorithmKind::SHA3_224 => digest_0::<sha3::Sha3_224, _>(_input, _output),
+        HashAlgorithmKind::SHA3_256 => digest_0::<sha3::Sha3_256, _>(_input, _output),
+        HashAlgorithmKind::SHA3_384 => digest_0::<sha3::Sha3_384, _>(_input, _output),
+        HashAlgorithmKind::SHA3_512 => digest_0::<sha3::Sha3_512, _>(_input, _output),
+        HashAlgorithmKind::GIT_SHA1 => digest_git_sha1::<_>(_input, _output),
     }
 }
 
@@ -37,7 +37,7 @@ pub fn digest_0<Hash: digest::Digest + io::Write, Input: io::Read>(
     let _hash = _hasher.finalize();
     _output.extend_from_slice(_hash.as_slice());
 
-    return Ok(());
+    Ok(())
 }
 
 pub fn digest_git_sha1<Input: io::Read>(
@@ -57,5 +57,5 @@ pub fn digest_git_sha1<Input: io::Read>(
     let _hash = _hasher.finalize();
     _output.extend_from_slice(_hash.as_slice());
 
-    return Ok(());
+    Ok(())
 }

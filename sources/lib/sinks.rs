@@ -26,12 +26,12 @@ impl<Stream: io::Write> StandardHashesSink<'static, Stream> {
             path: _path,
             flush: true,
         };
-        return _sink;
+        _sink
     }
 
     pub fn done(self) -> (Result<Stream, io::Error>) {
         let _stream = self.stream.into_inner()?;
-        return Ok(_stream);
+        Ok(_stream)
     }
 }
 
@@ -49,10 +49,10 @@ impl<Stream: io::Write> HashesSink for StandardHashesSink<'_, Stream> {
         if self.flush {
             self.stream.flush()?;
         }
-        return Ok(());
+        Ok(())
     }
 
     fn flush(&mut self) -> (Result<(), io::Error>) {
-        return self.stream.flush();
+        self.stream.flush()
     }
 }

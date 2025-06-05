@@ -84,24 +84,18 @@ pub fn main() -> (Result<(), io::Error>) {
         }
         Ok(ref _stat) if _stat.is_file() => {
             if _flags.relative {
-                if let Some(_relative_path) = _source_path.parent() {
-                    Some(_relative_path.into())
-                } else {
-                    None
-                }
+                _source_path.parent().map(|_relative_path| _relative_path.into())
             } else {
                 None
             }
         }
         Ok(_) => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "[a12f1634]  invalid source path (non file or folder)",
             ))
         }
         Err(ref _error) if _error.kind() == io::ErrorKind::NotFound => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "[9ee46264]  invalid source path (non exists)",
             ))
         }
@@ -127,8 +121,7 @@ pub fn main() -> (Result<(), io::Error>) {
         || _output_path.starts_with(path::Path::new("/proc"))
         || _output_path.starts_with(path::Path::new("/sys"))
     {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        return Err(io::Error::other(
             "[49b2e473]  invalid output path",
         ));
     } else {
@@ -140,14 +133,12 @@ pub fn main() -> (Result<(), io::Error>) {
             match fs::metadata(&_output_path) {
                 Ok(ref _stat) if _stat.is_dir() => Some((_output_path.clone(), Some(true))),
                 Ok(ref _stat) if _stat.is_file() => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
+                    return Err(io::Error::other(
                         "[b4ab81b9]  invalid output path (already exists)",
                     ))
                 }
                 Ok(_) => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
+                    return Err(io::Error::other(
                         "[8366e424]  invalid output path (non file or folder)",
                     ))
                 }
@@ -172,8 +163,7 @@ pub fn main() -> (Result<(), io::Error>) {
                                 break;
                             }
                             Ok(_) => {
-                                return Err(io::Error::new(
-                                    io::ErrorKind::Other,
+                                return Err(io::Error::other(
                                     "[2cb4982d]  invalid hashes path (non file or folder)",
                                 ))
                             }
@@ -192,14 +182,12 @@ pub fn main() -> (Result<(), io::Error>) {
                 }
                 Ok(ref _stat) if _stat.is_file() => Some((_source_path.clone(), Some(false))),
                 Ok(_) => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
+                    return Err(io::Error::other(
                         "[cce14438]  invalid source path (non file or folder)",
                     ))
                 }
                 Err(ref _error) if _error.kind() == io::ErrorKind::NotFound => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Other,
+                    return Err(io::Error::other(
                         "[5f86a63d]  invalid source path (non exists)",
                     ))
                 }
@@ -333,7 +321,7 @@ pub fn main() -> (Result<(), io::Error>) {
             _dashboard.add(_folder.clone());
             _dashboard.add(_files.clone());
             _dashboard.add(_data.clone());
-            thread::spawn(move || -> () {
+            thread::spawn(move || {
                 _dashboard.join().unwrap();
             });
         }
@@ -384,7 +372,7 @@ pub fn main() -> (Result<(), io::Error>) {
         .contents_first(false)
         .into_iter();
 
-    let mut _walk_index = 0 as u64;
+    let mut _walk_index = 0_u64;
 
     let mut _batch = if _flags.batch_size > 1 {
         Some(
@@ -397,7 +385,7 @@ pub fn main() -> (Result<(), io::Error>) {
     };
 
     let mut _errors = Vec::<io::Error>::new();
-    let _unknown_error = io::Error::new(io::ErrorKind::Other, "[31b7b284]  unexpected error");
+    let _unknown_error = io::Error::other("[31b7b284]  unexpected error");
 
     loop {
         _walk_index += 1;
@@ -446,7 +434,7 @@ pub fn main() -> (Result<(), io::Error>) {
                     } else {
                         _path.as_os_str()
                     };
-                    let _path_for_sink = if _path_for_sink != "" {
+                    let _path_for_sink = if !_path_for_sink.is_empty() {
                         _path_for_sink
                     } else {
                         ffi::OsStr::new(".")
@@ -458,7 +446,7 @@ pub fn main() -> (Result<(), io::Error>) {
                     continue;
                 } else {
                     let _error = _error.into_io_error().unwrap_or_else(|| {
-                        io::Error::new(io::ErrorKind::Other, "[7961fa68]  unexpected error")
+                        io::Error::other("[7961fa68]  unexpected error")
                     });
                     _errors.push(_error);
                     break;
@@ -487,7 +475,7 @@ pub fn main() -> (Result<(), io::Error>) {
                     } else {
                         _path.as_os_str()
                     };
-                    let _path_for_sink = if _path_for_sink != "" {
+                    let _path_for_sink = if !_path_for_sink.is_empty() {
                         _path_for_sink
                     } else {
                         ffi::OsStr::new(".")
@@ -499,7 +487,7 @@ pub fn main() -> (Result<(), io::Error>) {
                     continue;
                 } else {
                     let _error = _error.into_io_error().unwrap_or_else(|| {
-                        io::Error::new(io::ErrorKind::Other, "[7961fa68]  unexpected error")
+                        io::Error::other("[7961fa68]  unexpected error")
                     });
                     _errors.push(_error);
                     break;
@@ -638,8 +626,7 @@ pub fn main() -> (Result<(), io::Error>) {
         match _completion.join() {
             Ok(Ok(())) => (),
             Ok(Err(_error)) => _errors.push(_error),
-            Err(_error) => _errors.push(io::Error::new(
-                io::ErrorKind::Other,
+            Err(_error) => _errors.push(io::Error::other(
                 "[ee3e2b02]  unexpected error",
             )),
         }
@@ -653,12 +640,11 @@ pub fn main() -> (Result<(), io::Error>) {
     }
 
     if _errors.is_empty() {
-        return Ok(());
+        Ok(())
     } else {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        Err(io::Error::other(
             format!("[32f6fc78]  encountered {} errors", _errors.len()),
-        ));
+        ))
     }
 }
 
@@ -699,7 +685,7 @@ fn execute_hasher<Sink: HashesSink>(
         } else {
             _path.as_os_str()
         };
-        let _path_for_sink = if _path_for_sink != "" {
+        let _path_for_sink = if !_path_for_sink.is_empty() {
             _path_for_sink
         } else {
             ffi::OsStr::new(".")
@@ -806,7 +792,7 @@ fn execute_hasher<Sink: HashesSink>(
         }
     }
 
-    return Ok(());
+    Ok(())
 }
 
 #[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
@@ -822,10 +808,10 @@ fn entry_order(
         CreateBatchOrder::Index => DirEntryOrder(_index, 0, 0),
         CreateBatchOrder::Inode => DirEntryOrder(_metadata.ino(), 0, 0),
         CreateBatchOrder::InodeAndSizeBuckets => {
-            return entry_order_by_inode(_entry, _metadata, _index)
+            entry_order_by_inode(_entry, _metadata, _index)
         }
-        CreateBatchOrder::Extent => return entry_order_by_extent(_entry, _metadata, _index),
-        CreateBatchOrder::Random => return entry_order_by_hash(_entry, _metadata, _index),
+        CreateBatchOrder::Extent => entry_order_by_extent(_entry, _metadata, _index),
+        CreateBatchOrder::Random => entry_order_by_hash(_entry, _metadata, _index),
     }
 }
 
@@ -846,7 +832,7 @@ fn entry_order_by_inode(
 
     // NOTE:  Then order files by inode and then based on device.
     //   (This doesn't perfectly distributes files from different devices, but we try...)
-    let _order_3 = (_inode % (1024 * 128) << 32) | ((_dev >> 32) ^ (_dev & 0xffffffff));
+    let _order_3 = ((_inode % (1024 * 128)) << 32) | ((_dev >> 32) ^ (_dev & 0xffffffff));
 
     DirEntryOrder(_order_1, _order_2, _order_3)
 }
