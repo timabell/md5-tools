@@ -1,78 +1,74 @@
-
-
-#[ derive (Copy, Clone, Eq, PartialEq) ]
-#[ allow (non_camel_case_types) ]
+#[derive(Copy, Clone, Eq, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum HashAlgorithmKind {
-	MD5,
-	SHA1,
-	SHA2_224,
-	SHA2_256,
-	SHA2_384,
-	SHA2_512,
-	SHA3_224,
-	SHA3_256,
-	SHA3_384,
-	SHA3_512,
-	GIT_SHA1,
+    MD5,
+    SHA1,
+    SHA2_224,
+    SHA2_256,
+    SHA2_384,
+    SHA2_512,
+    SHA3_224,
+    SHA3_256,
+    SHA3_384,
+    SHA3_512,
+    GIT_SHA1,
 }
 
-
-#[ derive (Copy, Clone, Eq, PartialEq) ]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct HashAlgorithm {
-	pub kind : HashAlgorithmKind,
-	pub name : &'static str,
-	pub name_lower : &'static str,
-	pub empty : &'static str,
-	pub invalid : &'static str,
-	pub invalid_raw : &'static [u8],
-	pub pattern : &'static str,
-	pub suffix : &'static str,
+    pub kind: HashAlgorithmKind,
+    pub name: &'static str,
+    pub name_lower: &'static str,
+    pub empty: &'static str,
+    pub invalid: &'static str,
+    pub invalid_raw: &'static [u8],
+    pub pattern: &'static str,
+    pub suffix: &'static str,
 }
 
+pub static MD5: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::MD5,
+    name: "MD5",
+    name_lower: "md5",
+    empty: "d41d8cd98f00b204e9800998ecf8427e",
+    invalid: "00000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{32}) ([ *])(.+)$",
+    suffix: ".md5",
+};
 
+pub static SHA1: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::SHA1,
+    name: "SHA1",
+    name_lower: "sha1",
+    empty: "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    invalid: "0000000000000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{40}) ([ *])(.+)$",
+    suffix: ".sha1",
+};
 
+pub static SHA2_224: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::SHA2_224,
+    name: "SHA224",
+    name_lower: "sha224",
+    empty: "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f",
+    invalid: "00000000000000000000000000000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{56}) ([ *])(.+)$",
+    suffix: ".sha224",
+};
 
-pub static MD5 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::MD5,
-		name : "MD5", name_lower : "md5",
-		empty :        "d41d8cd98f00b204e9800998ecf8427e",
-		invalid :      "00000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{32}) ([ *])(.+)$",
-		suffix : ".md5",
-	};
-
-
-pub static SHA1 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::SHA1,
-		name : "SHA1", name_lower : "sha1",
-		empty :        "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-		invalid :      "0000000000000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{40}) ([ *])(.+)$",
-		suffix : ".sha1",
-	};
-
-
-pub static SHA2_224 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::SHA2_224,
-		name : "SHA224", name_lower : "sha224",
-		empty :        "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f",
-		invalid :      "00000000000000000000000000000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{56}) ([ *])(.+)$",
-		suffix : ".sha224",
-	};
-
-pub static SHA2_256 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::SHA2_256,
-		name : "SHA256", name_lower : "sha256",
-		empty :        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-		invalid :      "0000000000000000000000000000000000000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{64}) ([ *])(.+)$",
-		suffix : ".sha256",
-	};
+pub static SHA2_256: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::SHA2_256,
+    name: "SHA256",
+    name_lower: "sha256",
+    empty: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    invalid: "0000000000000000000000000000000000000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{64}) ([ *])(.+)$",
+    suffix: ".sha256",
+};
 
 pub static SHA2_384 : HashAlgorithm = HashAlgorithm {
 		kind : HashAlgorithmKind::SHA2_384,
@@ -94,26 +90,27 @@ pub static SHA2_512 : HashAlgorithm = HashAlgorithm {
 		suffix : ".sha512",
 	};
 
+pub static SHA3_224: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::SHA3_224,
+    name: "SHA3-224",
+    name_lower: "sha3-224",
+    empty: "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7",
+    invalid: "00000000000000000000000000000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{56}) ([ *])(.+)$",
+    suffix: ".sha3-224",
+};
 
-pub static SHA3_224 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::SHA3_224,
-		name : "SHA3-224", name_lower : "sha3-224",
-		empty :        "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7",
-		invalid :      "00000000000000000000000000000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{56}) ([ *])(.+)$",
-		suffix : ".sha3-224",
-	};
-
-pub static SHA3_256 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::SHA3_256,
-		name : "SHA3-256", name_lower : "sha3-256",
-		empty :        "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
-		invalid :      "0000000000000000000000000000000000000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{64}) ([ *])(.+)$",
-		suffix : ".sha3-256",
-	};
+pub static SHA3_256: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::SHA3_256,
+    name: "SHA3-256",
+    name_lower: "sha3-256",
+    empty: "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
+    invalid: "0000000000000000000000000000000000000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{64}) ([ *])(.+)$",
+    suffix: ".sha3-256",
+};
 
 pub static SHA3_384 : HashAlgorithm = HashAlgorithm {
 		kind : HashAlgorithmKind::SHA3_384,
@@ -135,14 +132,13 @@ pub static SHA3_512 : HashAlgorithm = HashAlgorithm {
 		suffix : ".sha3-512",
 	};
 
-
-pub static GIT_SHA1 : HashAlgorithm = HashAlgorithm {
-		kind : HashAlgorithmKind::GIT_SHA1,
-		name : "GIT-SHA1", name_lower : "git-sha1",
-		empty :        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
-		invalid :      "0000000000000000000000000000000000000000",
-		invalid_raw : b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
-		pattern : r"^(?-u)([0-9a-f]{40}) ([ *])(.+)$",
-		suffix : ".git-sha1",
-	};
-
+pub static GIT_SHA1: HashAlgorithm = HashAlgorithm {
+    kind: HashAlgorithmKind::GIT_SHA1,
+    name: "GIT-SHA1",
+    name_lower: "git-sha1",
+    empty: "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+    invalid: "0000000000000000000000000000000000000000",
+    invalid_raw: b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
+    pattern: r"^(?-u)([0-9a-f]{40}) ([ *])(.+)$",
+    suffix: ".git-sha1",
+};
