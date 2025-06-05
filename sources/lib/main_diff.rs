@@ -427,7 +427,7 @@ fn load(
     _zero: bool,
     _decompressor: CompressionAlgorithm,
 ) -> (Result<Source, io::Error>) {
-    let mut _file = fs::File::open(_path)?;
+    let mut _file = fs::File::open(_path).expect(format!("Unable to open file {}", _path.to_string_lossy()).as_str());
 
     if _decompressor != CompressionAlgorithm::None {
         let mut _filter = match _decompressor {
