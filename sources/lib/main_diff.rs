@@ -511,6 +511,7 @@ fn load_from_stream<Stream: io::Read>(
         let _delimiter = if _zero { b'\0' } else { b'\n' };
         let mut _buffer = Vec::with_capacity(8 * 1024);
         let mut _line: usize = 0;
+        let mut _is_hashdeep_format = false;
 
         loop {
             _line += 1;
@@ -527,6 +528,70 @@ fn load_from_stream<Stream: io::Read>(
                 continue;
             }
 
+            // Check for hashdeep format header
+            if _line <= 4 && _buffer.len() >= 4 && &_buffer[0..4] == b"%%%%" {
+                if _line == 1 && _buffer.len() >= 13 && &_buffer[0..13] == b"%%%% HASHDEEP" {
+                    _is_hashdeep_format = true;
+                }
+                continue;
+            }
+
+            // Skip hashdeep comment lines (starting with ##)
+            if _is_hashdeep_format && _buffer.len() >= 2 && &_buffer[0..2] == b"##" {
+                continue;
+            }
+
+            // Process hashdeep data line (size,md5,filename)
+            if _is_hashdeep_format {
+
+                // Find the first comma
+                if let Some(_first_comma_pos) = _buffer.iter().position(|&_byte| _byte == b',') {
+                    // Find the second comma
+                    if let Some(_second_comma_pos) = _buffer[_first_comma_pos + 1..].iter().position(|&_byte| _byte == b',') {
+                        let _second_comma_pos = _first_comma_pos + 1 + _second_comma_pos;
+
+                        //debug
+                        if (verbose){
+                            println!("{:?}", ffi::OsStr::from_bytes(&_buffer));
+                        }
+
+                        // Extract the hash and path
+                        let _hash = &_buffer[_first_comma_pos + 1.._second_comma_pos];
+                        let _path = &_buffer[_second_comma_pos + 1..];
+
+                        // Convert hash to string
+                        if let Ok(_hash_str) = str::from_utf8(_hash) {
+                            // Handle path
+                            let _path_bytes = _path.to_vec();
+                            let _path = ffi::OsStr::from_bytes(&_path_bytes);
+
+                            let _hash = _tokens.include_hash(_hash_str);
+                            let _path = _tokens.include_path(_path);
+
+                            let _record = SourceRecord {
+                                hash: _hash,
+                                path: _path,
+                                line: _line,
+                            };
+
+                            _records.push(_record);
+                            continue;
+                        }
+                    }
+                }
+
+                // If we get here, the hashdeep line wasn't properly formatted
+                return Err(io::Error::other(
+                    format!(
+                        "invalid hashdeep record at line {} in file {}. Failure at: {:?}",
+                        _line,
+                        _path.to_string_lossy(),
+                        ffi::OsStr::from_bytes(&_buffer),
+                    ),
+                ));
+            }
+
+            // Process standard format
             if _pattern.is_match(&_buffer) {
                 // Check if the line starts with a backslash (escaped format)
                 let _is_escaped = _buffer.len() > 0 && _buffer[0] == b'\\';
