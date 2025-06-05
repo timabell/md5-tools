@@ -52,7 +52,7 @@ struct Diff {
 enum DiffEntry<K> {
     UniqueLeft(Vec<K>),
     UniqueRight(Vec<K>),
-    Matching(Vec<K>, Vec<K>),
+    Matching,
     Conflicting(Vec<K>, Vec<K>),
 }
 
@@ -727,7 +727,7 @@ fn diff(
             (Some(_records_left), Some(_records_right)) => {
                 if _records_left == _records_right {
                     _matching_hashes += 1;
-                    DiffEntry::Matching(_records_left, _records_right)
+                    DiffEntry::Matching
                 } else {
                     _conflicting_hashes += 1;
                     DiffEntry::Conflicting(_records_left, _records_right)
@@ -787,7 +787,7 @@ fn diff(
             (Some(_records_left), Some(_records_right)) => {
                 if _records_left == _records_right {
                     _matching_paths += 1;
-                    DiffEntry::Matching(_records_left, _records_right)
+                    DiffEntry::Matching
                 } else {
                     _conflicting_paths += 1;
                     DiffEntry::Conflicting(_records_left, _records_right)
