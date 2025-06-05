@@ -567,7 +567,12 @@ fn load_from_stream<Stream: io::Read>(
                     );
                 }
                 return Err(io::Error::other(
-                    "[1bd51464]  invalid record line syntax",
+                    format!(
+                        "[1bd51464]  invalid record line syntax at line {} in file {}. Line contents:\n{:?}",
+                        _line,
+                        _path.to_string_lossy(),
+                        ffi::OsStr::from_bytes(&_buffer),
+                    ),
                 ));
             }
         }
