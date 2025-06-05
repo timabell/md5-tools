@@ -111,9 +111,7 @@ pub fn main() -> (Result<(), io::Error>) {
     }
 
     if !_format_flags.path {
-        return Err(io::Error::other(
-            "[d9b3891e]  paths are mandatory",
-        ));
+        return Err(io::Error::other("[d9b3891e]  paths are mandatory"));
     }
 
     #[cfg(feature = "profile")]
@@ -336,7 +334,9 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
     }
 
     for &_path in _diff.paths.iter() {
-        if let DiffEntry::Conflicting(_hashes_left, _hashes_right) = _diff.by_path.get(&_path).unwrap() {
+        if let DiffEntry::Conflicting(_hashes_left, _hashes_right) =
+            _diff.by_path.get(&_path).unwrap()
+        {
             for &_hash in _hashes_left.iter() {
                 _conflicting_paths.push(('!', _tag_left, _path, _hash))
             }
@@ -487,9 +487,7 @@ fn load(
         }
         let _exit = _filter.wait()?;
         if _outcome.is_ok() && !_exit.success() {
-            return Err(io::Error::other(
-                "[7fadf032]  filter failed",
-            ));
+            return Err(io::Error::other("[7fadf032]  filter failed"));
         }
 
         _outcome
@@ -812,8 +810,6 @@ fn diff(
         _diff_by_path.insert(_path, _entry);
         _distinct_paths += 1;
     }
-
-    
 
     Diff {
         hashes: _hashes,

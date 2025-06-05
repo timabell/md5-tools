@@ -84,7 +84,9 @@ pub fn main() -> (Result<(), io::Error>) {
         }
         Ok(ref _stat) if _stat.is_file() => {
             if _flags.relative {
-                _source_path.parent().map(|_relative_path| _relative_path.into())
+                _source_path
+                    .parent()
+                    .map(|_relative_path| _relative_path.into())
             } else {
                 None
             }
@@ -121,9 +123,7 @@ pub fn main() -> (Result<(), io::Error>) {
         || _output_path.starts_with(path::Path::new("/proc"))
         || _output_path.starts_with(path::Path::new("/sys"))
     {
-        return Err(io::Error::other(
-            "[49b2e473]  invalid output path",
-        ));
+        return Err(io::Error::other("[49b2e473]  invalid output path"));
     } else {
         false
     } {
@@ -445,9 +445,9 @@ pub fn main() -> (Result<(), io::Error>) {
                 if _flags.ignore_walk_errors {
                     continue;
                 } else {
-                    let _error = _error.into_io_error().unwrap_or_else(|| {
-                        io::Error::other("[7961fa68]  unexpected error")
-                    });
+                    let _error = _error
+                        .into_io_error()
+                        .unwrap_or_else(|| io::Error::other("[7961fa68]  unexpected error"));
                     _errors.push(_error);
                     break;
                 }
@@ -486,9 +486,9 @@ pub fn main() -> (Result<(), io::Error>) {
                 if _flags.ignore_walk_errors {
                     continue;
                 } else {
-                    let _error = _error.into_io_error().unwrap_or_else(|| {
-                        io::Error::other("[7961fa68]  unexpected error")
-                    });
+                    let _error = _error
+                        .into_io_error()
+                        .unwrap_or_else(|| io::Error::other("[7961fa68]  unexpected error"));
                     _errors.push(_error);
                     break;
                 }
@@ -626,9 +626,7 @@ pub fn main() -> (Result<(), io::Error>) {
         match _completion.join() {
             Ok(Ok(())) => (),
             Ok(Err(_error)) => _errors.push(_error),
-            Err(_error) => _errors.push(io::Error::other(
-                "[ee3e2b02]  unexpected error",
-            )),
+            Err(_error) => _errors.push(io::Error::other("[ee3e2b02]  unexpected error")),
         }
     }
 
@@ -642,9 +640,10 @@ pub fn main() -> (Result<(), io::Error>) {
     if _errors.is_empty() {
         Ok(())
     } else {
-        Err(io::Error::other(
-            format!("[32f6fc78]  encountered {} errors", _errors.len()),
-        ))
+        Err(io::Error::other(format!(
+            "[32f6fc78]  encountered {} errors",
+            _errors.len()
+        )))
     }
 }
 
@@ -807,9 +806,7 @@ fn entry_order(
     match _kind {
         CreateBatchOrder::Index => DirEntryOrder(_index, 0, 0),
         CreateBatchOrder::Inode => DirEntryOrder(_metadata.ino(), 0, 0),
-        CreateBatchOrder::InodeAndSizeBuckets => {
-            entry_order_by_inode(_entry, _metadata, _index)
-        }
+        CreateBatchOrder::InodeAndSizeBuckets => entry_order_by_inode(_entry, _metadata, _index),
         CreateBatchOrder::Extent => entry_order_by_extent(_entry, _metadata, _index),
         CreateBatchOrder::Random => entry_order_by_hash(_entry, _metadata, _index),
     }

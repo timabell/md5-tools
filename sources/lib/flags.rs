@@ -175,8 +175,7 @@ impl<'a> CreateFlags {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-#[derive(Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Default)]
 pub enum CreateBatchOrder {
     #[default]
     Index,
@@ -185,7 +184,6 @@ pub enum CreateBatchOrder {
     Extent,
     Random,
 }
-
 
 impl argparse::FromCommandLine for CreateBatchOrder {
     fn from_argument(_value: &str) -> (Result<CreateBatchOrder, String>) {
@@ -357,8 +355,7 @@ impl<'a> CompressionFlags {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-#[derive(Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Default)]
 pub enum CompressionAlgorithm {
     #[default]
     None,
@@ -371,4 +368,3 @@ pub enum CompressionAlgorithm {
     Lzo,   // http://www.lzop.org/
     Zstd,  // https://github.com/facebook/zstd
 }
-
