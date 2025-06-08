@@ -1,4 +1,7 @@
 847676261680bff61c72961c8198abc0  ./same.txt
-229bb19e0b31f74d624dae7c75ef6322  ./different.txt
-222eb834f6819854143ed189ef69d5c5  ./b-only.txt
 8eb563719298a20c2df97b2ea1a558fa  ./moved-to.txt
+69e2e44cd3dafbfd2d7d5b8aa610f022  ./copy-dest.txt
+222eb834f6819854143ed189ef69d5c5  ./b-only.txt
+69e2e44cd3dafbfd2d7d5b8aa610f022  ./copy-src.txt
+229bb19e0b31f74d624dae7c75ef6322  ./different.txt
+69ad4d419a85d3ab6b2d679de4aa6309  ./additional-b-only.txt
