@@ -386,8 +386,9 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
     if !_unique_hashes_left.is_empty() {
         println!();
         println!(
-            "####  Hashes unique in ({}) :: {}",
-            _tag_left, _diff.by_hash_statistics.unique_left
+            "#### {} hashes that are only in {}",
+            _diff.by_hash_statistics.unique_left,
+            _tag_left,
         );
         print_pairs(&mut _unique_hashes_left, _tokens, true);
     }
@@ -395,8 +396,9 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
     if !_unique_hashes_right.is_empty() {
         println!();
         println!(
-            "####  Hashes unique in ({}) :: {}",
-            _tag_right, _diff.by_hash_statistics.unique_right
+            "#### {} hashes that are only in {}",
+            _diff.by_hash_statistics.unique_right,
+            _tag_right,
         );
         print_pairs(&mut _unique_hashes_right, _tokens, true);
     }
@@ -404,8 +406,10 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
     if !_conflicting_paths.is_empty() {
         println!();
         println!(
-            "####  Paths conflicting in ({}) and ({}) :: {}",
-            _tag_left, _tag_right, _diff.by_path_statistics.conflicting
+            "#### {} files with different contents in {} and {}",
+            _diff.by_path_statistics.conflicting,
+            _tag_left,
+            _tag_right,
         );
         print_pairs(&mut _conflicting_paths, _tokens, true);
     }
@@ -413,8 +417,10 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
     if !_renamed_hashes.is_empty() {
         println!();
         println!(
-            "####  Files re-organized in ({}) and ({}) :: {} (hashes)",
-            _tag_left, _tag_right, _diff.by_hash_statistics.conflicting
+            "#### {} hashes found at different paths in {} and {}",
+            _diff.by_hash_statistics.conflicting, // todo: bug
+            _tag_left,
+            _tag_right,
         );
         print_pairs(&mut _renamed_hashes, _tokens, false);
     }
