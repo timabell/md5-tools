@@ -387,8 +387,7 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
         println!();
         println!(
             "#### {} hashes that are only in {}",
-            _diff.by_hash_statistics.unique_left,
-            _tag_left,
+            _diff.by_hash_statistics.unique_left, _tag_left,
         );
         print_pairs(&mut _unique_hashes_left, _tokens, true);
     }
@@ -397,8 +396,7 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
         println!();
         println!(
             "#### {} hashes that are only in {}",
-            _diff.by_hash_statistics.unique_right,
-            _tag_right,
+            _diff.by_hash_statistics.unique_right, _tag_right,
         );
         print_pairs(&mut _unique_hashes_right, _tokens, true);
     }
@@ -407,9 +405,7 @@ fn report_diff_entries(_tag_left: char, _tag_right: char, _diff: &Diff, _tokens:
         println!();
         println!(
             "#### {} files with different contents in {} and {}",
-            _diff.by_path_statistics.conflicting,
-            _tag_left,
-            _tag_right,
+            _diff.by_path_statistics.conflicting, _tag_left, _tag_right,
         );
         print_pairs(&mut _conflicting_paths, _tokens, true);
     }
@@ -433,7 +429,8 @@ fn load(
     _zero: bool,
     _decompressor: CompressionAlgorithm,
 ) -> (Result<Source, io::Error>) {
-    let mut _file = fs::File::open(_path).expect(format!("Unable to open file {}", _path.to_string_lossy()).as_str());
+    let mut _file = fs::File::open(_path)
+        .expect(format!("Unable to open file {}", _path.to_string_lossy()).as_str());
 
     if _decompressor != CompressionAlgorithm::None {
         let mut _filter = match _decompressor {
@@ -549,15 +546,17 @@ fn load_from_stream<Stream: io::Read>(
 
             // Process hashdeep data line (size,md5,filename)
             if _is_hashdeep_format {
-
                 // Find the first comma
                 if let Some(_first_comma_pos) = _buffer.iter().position(|&_byte| _byte == b',') {
                     // Find the second comma
-                    if let Some(_second_comma_pos) = _buffer[_first_comma_pos + 1..].iter().position(|&_byte| _byte == b',') {
+                    if let Some(_second_comma_pos) = _buffer[_first_comma_pos + 1..]
+                        .iter()
+                        .position(|&_byte| _byte == b',')
+                    {
                         let _second_comma_pos = _first_comma_pos + 1 + _second_comma_pos;
 
                         //debug
-                        if (verbose){
+                        if (verbose) {
                             println!("{:?}", ffi::OsStr::from_bytes(&_buffer));
                         }
 
@@ -587,14 +586,12 @@ fn load_from_stream<Stream: io::Read>(
                 }
 
                 // If we get here, the hashdeep line wasn't properly formatted
-                return Err(io::Error::other(
-                    format!(
-                        "invalid hashdeep record at line {} in file {}. Failure at: {:?}",
-                        _line,
-                        _path.to_string_lossy(),
-                        ffi::OsStr::from_bytes(&_buffer),
-                    ),
-                ));
+                return Err(io::Error::other(format!(
+                    "invalid hashdeep record at line {} in file {}. Failure at: {:?}",
+                    _line,
+                    _path.to_string_lossy(),
+                    ffi::OsStr::from_bytes(&_buffer),
+                )));
             }
 
             // Process standard format
