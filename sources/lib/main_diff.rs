@@ -526,6 +526,9 @@ fn load_from_stream<Stream: io::Read>(
         let mut _line: usize = 0;
         let mut _is_hashdeep_format = false;
 
+        // Track multi-line entries
+        let mut _current_multi_line: Option<(usize, String, Vec<u8>)> = None; // (line_number, hash, path_bytes)
+
         loop {
             _line += 1;
             _buffer.clear();
@@ -606,6 +609,22 @@ fn load_from_stream<Stream: io::Read>(
 
             // Process standard format
             if _pattern.is_match(&_buffer) {
+                // If we have a pending multi-line entry, finalize it first
+                if let Some((start_line, hash_str, path_bytes)) = _current_multi_line.take() {
+                    let _path = ffi::OsStr::from_bytes(&path_bytes);
+                    let _hash = _tokens.include_hash(&hash_str);
+                    let _path = _tokens.include_path(_path);
+
+                    let _record = SourceRecord {
+                        hash: _hash,
+                        path: _path,
+                        line: start_line,
+                    };
+
+                    _records.push(_record);
+                }
+
+                // Process the new line
                 // Check if the line starts with a backslash (escaped format)
                 let _is_escaped = _buffer.len() > 0 && _buffer[0] == b'\\';
 
@@ -651,19 +670,18 @@ fn load_from_stream<Stream: io::Read>(
                     _path.to_vec()
                 };
 
-                let _path = ffi::OsStr::from_bytes(&_path_bytes);
+                // Start a new multi-line entry
+                _current_multi_line = Some((_line, _hash.to_string(), _path_bytes));
+            } else if let Some((start_line, hash_str, mut path_bytes)) = _current_multi_line.take()
+            {
+                // This is a continuation of a multi-line entry
+                path_bytes.push(b'\n');
+                path_bytes.extend_from_slice(&_buffer);
 
-                let _hash = _tokens.include_hash(_hash);
-                let _path = _tokens.include_path(_path);
-
-                let _record = SourceRecord {
-                    hash: _hash,
-                    path: _path,
-                    line: _line,
-                };
-
-                _records.push(_record);
+                // Update the multi-line entry
+                _current_multi_line = Some((start_line, hash_str, path_bytes));
             } else {
+                // Invalid line and not part of a multi-line entry
                 if verbose {
                     eprintln!(
                         "[ee] [d8bd4da9] @{} {:?}",
@@ -680,6 +698,21 @@ fn load_from_stream<Stream: io::Read>(
                     ),
                 ));
             }
+        }
+
+        // If we have a pending multi-line entry at the end, finalize it
+        if let Some((start_line, hash_str, path_bytes)) = _current_multi_line {
+            let _path = ffi::OsStr::from_bytes(&path_bytes);
+            let _hash = _tokens.include_hash(&hash_str);
+            let _path = _tokens.include_path(_path);
+
+            let _record = SourceRecord {
+                hash: _hash,
+                path: _path,
+                line: start_line,
+            };
+
+            _records.push(_record);
         }
     }
 
