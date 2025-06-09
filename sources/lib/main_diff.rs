@@ -445,8 +445,7 @@ fn read_compressed_stream(
     _zero: bool,
     _decompressor: CompressionAlgorithm,
     mut _file: fs::File,
-) -> (Result<Source, io::Error>)
-{
+) -> (Result<Source, io::Error>) {
     let mut _filter = match _decompressor {
         CompressionAlgorithm::Gzip => {
             let mut _filter = process::Command::new("gzip");
@@ -1039,3 +1038,181 @@ impl Tokens {
 
 #[allow(non_upper_case_globals)]
 static verbose: bool = false;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::std::io::Cursor;
+
+    #[test]
+    fn test_load_from_stream_md5sum_format() {
+        // Create a simple md5sum format string with multiple entries
+        let md5_content = r#"d6daacdeaf82eb6cbd8e43ceae656643  ./file1.txt
+847676261680bff61c72961c8198abc0  ./file2.txt
+e77d9b8dcb84d1fcd21187b03eac74f1  ./some/nested/file3.txt
+"#;
+        let stream = Cursor::new(md5_content);
+        let path = path::Path::new("test_path");
+        let mut tokens = Tokens::new(&MD5.empty, &MD5.invalid);
+        let pattern = regex::bytes::Regex::new(MD5.pattern).unwrap();
+
+        // Call the function
+        let result = load_from_stream(stream, path, &mut tokens, &pattern, false);
+
+        // Print the error if there is one
+        if let Err(ref e) = result {
+            println!("Error: {}", e);
+        }
+
+        // Verify the result
+        assert!(result.is_ok());
+        let source = result.unwrap();
+        assert!(source.records.len() == 3);
+
+        // Verify the records
+        assert!(tokens.select_hash(source.records[0].hash) == "d6daacdeaf82eb6cbd8e43ceae656643");
+        assert!(tokens.select_path(source.records[0].path).to_string_lossy() == "file1.txt");
+
+        assert!(tokens.select_hash(source.records[1].hash) == "847676261680bff61c72961c8198abc0");
+        assert!(tokens.select_path(source.records[1].path).to_string_lossy() == "file2.txt");
+
+        assert!(tokens.select_hash(source.records[2].hash) == "e77d9b8dcb84d1fcd21187b03eac74f1");
+        assert!(
+            tokens.select_path(source.records[2].path).to_string_lossy() == "some/nested/file3.txt"
+        );
+    }
+
+    #[test]
+    fn test_load_from_stream_md5sum_format_with_newlines() {
+        // Create a simple md5sum format string with multiple entries
+        let md5_content = r#"847676261679bff61c72961c8198abc0  ./file6.txt
+d6daacdeaf82eb6cbd8e43ceae656643  ./evil file
+with
+newlines.txt
+e77d9b8dcb84d1fcd21187b03eac74f1  ./file8.txt
+"#;
+        let stream = Cursor::new(md5_content);
+        let path = path::Path::new("test_path");
+        let mut tokens = Tokens::new(&MD5.empty, &MD5.invalid);
+        let pattern = regex::bytes::Regex::new(MD5.pattern).unwrap();
+
+        // Call the function
+        let result = load_from_stream(stream, path, &mut tokens, &pattern, false);
+
+        // Print the error if there is one
+        if let Err(ref e) = result {
+            println!("Error: {}", e);
+        }
+
+        // Verify the result
+        assert!(result.is_ok());
+        let source = result.unwrap();
+        assert!(source.records.len() == 3);
+
+        // Verify the records
+        assert!(tokens.select_hash(source.records[0].hash) == "847676261679bff61c72961c8198abc0");
+        assert!(tokens.select_path(source.records[0].path).to_string_lossy() == "file6.txt");
+
+        assert!(tokens.select_hash(source.records[1].hash) == "d6daacdeaf82eb6cbd8e43ceae656643");
+        assert!(
+            tokens.select_path(source.records[1].path).to_string_lossy()
+                == "evil file\nwith\nnewlines.txt"
+        );
+
+        assert!(tokens.select_hash(source.records[2].hash) == "e77d9b8dcb84d1fcd21187b03eac74f1");
+        assert!(tokens.select_path(source.records[2].path).to_string_lossy() == "file8.txt");
+    }
+
+    #[test]
+    fn test_load_from_stream_hashdeep_format() {
+        // Create a simple hashdeep format string
+        let hashdeep_content = r#"%%%% HASHDEEP-1.0
+## Invoked from: /usr/bin/hashdeep
+## $ hashdeep -r /path/to/files
+## 
+123,d6daacdeaf82eb6cbd8e43ceae656643,file1.txt
+456,847676261680bff61c72961c8198abc0,file2.txt
+789,e77d9b8dcb84d1fcd21187b03eac74f1,some/nested/file3.txt
+101112,b52854d1f79de5ebeebf0160447a09c7,file with spaces.txt
+"#;
+        let stream = Cursor::new(hashdeep_content);
+        let path = path::Path::new("test_path");
+        let mut tokens = Tokens::new(&MD5.empty, &MD5.invalid);
+        let pattern = regex::bytes::Regex::new(MD5.pattern).unwrap();
+
+        // Call the function
+        let result = load_from_stream(stream, path, &mut tokens, &pattern, false);
+
+        // Print the error if there is one
+        if let Err(ref e) = result {
+            println!("Error: {}", e);
+        }
+
+        // Verify the result
+        assert!(result.is_ok());
+        let source = result.unwrap();
+        assert!(source.records.len() == 4);
+
+        // Verify the records
+        assert!(tokens.select_hash(source.records[0].hash) == "d6daacdeaf82eb6cbd8e43ceae656643");
+        assert!(tokens.select_path(source.records[0].path).to_string_lossy() == "file1.txt");
+
+        assert!(tokens.select_hash(source.records[1].hash) == "847676261680bff61c72961c8198abc0");
+        assert!(tokens.select_path(source.records[1].path).to_string_lossy() == "file2.txt");
+
+        assert!(tokens.select_hash(source.records[2].hash) == "e77d9b8dcb84d1fcd21187b03eac74f1");
+        assert!(
+            tokens.select_path(source.records[2].path).to_string_lossy() == "some/nested/file3.txt"
+        );
+
+        assert!(tokens.select_hash(source.records[3].hash) == "b52854d1f79de5ebeebf0160447a09c7");
+        assert!(
+            tokens.select_path(source.records[3].path).to_string_lossy() == "file with spaces.txt"
+        );
+    }
+
+    #[test]
+    fn test_load_from_stream_escaped_path() {
+        // Create a md5sum format string with escaped paths containing backslashes
+        let md5_content = r#"\d6daacdeaf82eb6cbd8e43ceae656643 *path/with\\backslash.txt
+\847676261680bff61c72961c8198abc0 *file/with\\multiple\\backslashes.txt
+\e77d9b8dcb84d1fcd21187b03eac74f1 *C:\\Windows\\System32\\file.dll
+"#;
+        let stream = Cursor::new(md5_content);
+        let path = path::Path::new("test_path");
+        let mut tokens = Tokens::new(&MD5.empty, &MD5.invalid);
+        let pattern = regex::bytes::Regex::new(MD5.pattern).unwrap();
+
+        // Call the function
+        let result = load_from_stream(stream, path, &mut tokens, &pattern, false);
+
+        // Print the error if there is one
+        if let Err(ref e) = result {
+            println!("Error: {}", e);
+        }
+
+        // Verify the result
+        assert!(result.is_ok());
+        let source = result.unwrap();
+        assert!(source.records.len() == 3);
+
+        // Verify the records
+        assert!(tokens.select_hash(source.records[0].hash) == "d6daacdeaf82eb6cbd8e43ceae656643");
+        assert!(
+            tokens.select_path(source.records[0].path).to_string_lossy()
+                == "path/with\\backslash.txt"
+        );
+
+        assert!(tokens.select_hash(source.records[1].hash) == "847676261680bff61c72961c8198abc0");
+        assert!(
+            tokens.select_path(source.records[1].path).to_string_lossy()
+                == "file/with\\multiple\\backslashes.txt"
+        );
+
+        assert!(tokens.select_hash(source.records[2].hash) == "e77d9b8dcb84d1fcd21187b03eac74f1");
+        assert!(
+            tokens.select_path(source.records[2].path).to_string_lossy()
+                == "C:\\Windows\\System32\\file.dll"
+        );
+    }
+}
