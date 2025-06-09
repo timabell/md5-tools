@@ -433,74 +433,85 @@ fn load(
         .expect(format!("Unable to open file {}", _path.to_string_lossy()).as_str());
 
     if _decompressor != CompressionAlgorithm::None {
-        let mut _filter = match _decompressor {
-            CompressionAlgorithm::Gzip => {
-                let mut _filter = process::Command::new("gzip");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Bzip2 => {
-                let mut _filter = process::Command::new("bzip2");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Lzip => {
-                let mut _filter = process::Command::new("lzip");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Xz => {
-                let mut _filter = process::Command::new("xz");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Lzma => {
-                let mut _filter = process::Command::new("lzma");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Lz4 => {
-                let mut _filter = process::Command::new("lz4");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Lzo => {
-                let mut _filter = process::Command::new("lzop");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::Zstd => {
-                let mut _filter = process::Command::new("zstd");
-                _filter.arg("-d");
-                _filter
-            }
-            CompressionAlgorithm::None => unreachable!("[9c7ca4b5]"),
-        };
-        _filter.stdin(process::Stdio::from(_file));
-        _filter.stdout(process::Stdio::piped());
-        _filter.stderr(process::Stdio::inherit());
-
-        let mut _filter = _filter.spawn()?;
-        let mut _stream = _filter.stdout.as_mut().unwrap();
-
-        let _outcome = load_from_stream(_stream, _path, _tokens, _pattern, _zero);
-
-        if _outcome.is_err() {
-            _filter.kill()?;
-        }
-        let _exit = _filter.wait()?;
-        if _outcome.is_ok() && !_exit.success() {
-            return Err(io::Error::other("[7fadf032]  filter failed"));
-        }
-
-        _outcome
-    } else {
-        load_from_stream(&mut _file, _path, _tokens, _pattern, _zero)
+        return read_compressed_stream(_path, _tokens, _pattern, _zero, _decompressor, _file);
     }
+    load_from_stream(_file, _path, _tokens, _pattern, _zero)
+}
+
+fn read_compressed_stream(
+    _path: &path::Path,
+    _tokens: &mut Tokens,
+    _pattern: &regex::bytes::Regex,
+    _zero: bool,
+    _decompressor: CompressionAlgorithm,
+    mut _file: fs::File,
+) -> (Result<Source, io::Error>)
+{
+    let mut _filter = match _decompressor {
+        CompressionAlgorithm::Gzip => {
+            let mut _filter = process::Command::new("gzip");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Bzip2 => {
+            let mut _filter = process::Command::new("bzip2");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Lzip => {
+            let mut _filter = process::Command::new("lzip");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Xz => {
+            let mut _filter = process::Command::new("xz");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Lzma => {
+            let mut _filter = process::Command::new("lzma");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Lz4 => {
+            let mut _filter = process::Command::new("lz4");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Lzo => {
+            let mut _filter = process::Command::new("lzop");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::Zstd => {
+            let mut _filter = process::Command::new("zstd");
+            _filter.arg("-d");
+            _filter
+        }
+        CompressionAlgorithm::None => unreachable!("[9c7ca4b5]"),
+    };
+    _filter.stdin(process::Stdio::from(_file));
+    _filter.stdout(process::Stdio::piped());
+    _filter.stderr(process::Stdio::inherit());
+
+    let mut _filter = _filter.spawn()?;
+    let mut _stream = _filter.stdout.as_mut().unwrap();
+
+    let _outcome = load_from_stream(_stream, _path, _tokens, _pattern, _zero);
+
+    if _outcome.is_err() {
+        _filter.kill()?;
+    }
+    let _exit = _filter.wait()?;
+    if _outcome.is_ok() && !_exit.success() {
+        return Err(io::Error::other("[7fadf032]  filter failed"));
+    }
+
+    _outcome
 }
 
 fn load_from_stream<Stream: io::Read>(
-    _stream: &mut Stream,
+    _stream: Stream,
     _path: &path::Path,
     _tokens: &mut Tokens,
     _pattern: &regex::bytes::Regex,
