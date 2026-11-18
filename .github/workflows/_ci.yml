@@ -1,0 +1,88 @@
+name: _ci
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'The release tag (e.g. v1.0.0)'
+        required: false
+        type: string
+        default: ''
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  get-rust-version:
+    runs-on: ubuntu-latest
+    outputs:
+      rust-version: ${{ steps.rust-version.outputs.RUST_VERSION }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Get rust version from .tool-versions
+      id: rust-version
+      run: echo "RUST_VERSION=$(grep '^rust ' .tool-versions | awk '{print $2}')" >> $GITHUB_OUTPUT
+
+  build:
+    needs: get-rust-version
+    strategy:
+      matrix:
+        include:
+        - os: ubuntu-latest
+          target: x86_64-unknown-linux-musl
+          artifact_name: md5-tools-linux-x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v6
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ needs.get-rust-version.outputs.rust-version }}
+        targets: ${{ matrix.target }}
+    - name: Cache Cargo registry
+      uses: actions/cache@v5
+      with:
+        path: ~/.cargo/registry/index
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-registry-
+    - name: Cache Cargo dependencies
+      uses: actions/cache@v5
+      with:
+        path: ~/.cargo/registry/cache
+        key: ${{ runner.os }}-cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-deps-
+    - name: Cache build artifacts
+      uses: actions/cache@v5
+      with:
+        path: target
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}-${{ hashFiles('**/*.rs') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.target }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}-
+          ${{ runner.os }}-${{ matrix.target }}-cargo-build-
+    - name: Install musl tools
+      if: matrix.target == 'x86_64-unknown-linux-musl'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
+    - name: Update Version
+      if: inputs.release_tag != ''
+      shell: bash
+      run: |
+        VERSION="${{ inputs.release_tag }}"
+        VERSION="${VERSION#v}"
+        sed -i "s/0\\.0\\.0-git/$VERSION/" Cargo.toml
+        sed -i "s/0\\.0\\.0-git/$VERSION/" Cargo.lock
+    - name: Build
+      run: cargo build --target ${{ matrix.target }} --release
+    - name: Test
+      run: cargo test --verbose --release --no-fail-fast
+    - name: Package Binaries
+      shell: bash
+      run: |
+        tar -czvf ${{ matrix.artifact_name }}.tar.gz -C "target/${{ matrix.target }}/release" md5-create md5-diff md5-cpio
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: ${{ matrix.artifact_name }}.*
+        retention-days: 1

@@ -1,0 +1,44 @@
+[changelog]
+header = ""
+body = """
+{% if version %}## {{ version }}
+{% else %}## [unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+
+{% for commit in commits %}\
+- {{ commit.message | upper_first }} ({{ commit.id | truncate(length=7, end="") }})
+{% endfor %}\
+{% endfor %}
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = true
+# true = filter out non-conventional commits (those without "type: message" format)
+filter_unconventional = true
+# false = keep each commit as one entry; true = split multi-paragraph commits
+split_commits = false
+
+# Match commit message prefixes to assign groups (change types).
+# First matching parser wins.
+# HTML comments control sort order, removed by striptags in template.
+commit_parsers = [
+    { message = "^feat", group = "<!-- 1 -->✨ Features" },
+    { message = "^fix", group = "<!-- 2 -->🐛 Bug Fixes" },
+    { message = "^refactor", group = "<!-- 3 -->🔧 Refactor" },
+    { message = "^perf", group = "<!-- 4 -->⚡ Performance" },
+    { message = "^doc", group = "<!-- 5 -->📚 Documentation" },
+    { message = "^security", group = "<!-- 6 -->🔒 Security" },
+    { message = "^chore", group = "<!-- 6 -->🧹 Chore" },
+]
+
+# true = exclude commits that don't match any parser (only release-worthy commits)
+# false = include commits that don't match any parser (as ungrouped)
+filter_commits = true
+
+tag_pattern = "v[0-9]*"
+# Skip pre-release tags like v1.0.0-beta.1
+skip_tags = "v[0-9]*-.*"

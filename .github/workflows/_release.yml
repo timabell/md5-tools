@@ -1,0 +1,44 @@
+name: _release
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'The release tag (e.g. v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Generate Release Notes
+      id: changelog
+      uses: orhun/git-cliff-action@v4
+      with:
+        config: .github/cliff.toml
+        args: --latest --strip header
+
+    - name: Download Linux Build
+      uses: actions/download-artifact@v8
+      with:
+        name: md5-tools-linux-x86_64
+        path: artifacts
+
+    - name: Generate SHA256 Checksums
+      working-directory: artifacts
+      run: |
+        sha256sum md5-tools-linux-x86_64.tar.gz > SHA256SUMS.txt
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v3
+      with:
+        tag_name: ${{ inputs.release_tag }}
+        name: ${{ inputs.release_tag }}
+        body: ${{ steps.changelog.outputs.content }}
+        files: |
+          artifacts/md5-tools-linux-x86_64.tar.gz
+          artifacts/SHA256SUMS.txt

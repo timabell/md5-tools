@@ -1,7 +1,7 @@
 
 [package]
 name = "md5-tools"
-version = "0.0.0"
+version = "0.0.0-git"
 authors = ["Ciprian Dorin Craciun <ciprian@volution.ro>"]
 edition = "2018"
 
