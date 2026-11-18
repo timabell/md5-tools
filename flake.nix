@@ -5,12 +5,12 @@
 
   outputs = { self, nixpkgs }:
     let
-      version = "0.3.0";
+      version = "0.4.0";
 
       assets = {
         x86_64-linux = {
           name = "md5-tools-linux-x86_64.tar.gz";
-          sha256 = "b6b57dbcc99e0f33230f9cd7dc29265df341f73920bc3120305f2e8382f9bbdc";
+          sha256 = "8f5b98ff806b86ecf4bea02f639af42419f05ca50c3edec27f43453f3f89cdf8";
         };
       };
 
