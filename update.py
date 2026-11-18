@@ -8,6 +8,7 @@ sha256 fields in flake.nix in place. Idempotent — exits cleanly if already cur
 Run locally or from a CI cron. No third-party dependencies.
 """
 import json
+import os
 import re
 import sys
 import urllib.request
@@ -22,7 +23,12 @@ ASSET_FOR_SYSTEM = {
 
 
 def fetch(url: str) -> str:
-    with urllib.request.urlopen(url, timeout=30) as r:
+    req = urllib.request.Request(url)
+    token = os.environ.get("GITHUB_TOKEN")
+    # API only: release downloads redirect to a CDN that rejects the header
+    if token and url.startswith("https://api.github.com/"):
+        req.add_header("Authorization", f"Bearer {token}")
+    with urllib.request.urlopen(req, timeout=30) as r:
         return r.read().decode()
 
 
