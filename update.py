@@ -33,6 +33,9 @@ def fetch(url: str) -> str:
 
 
 def main() -> int:
+    if not os.environ.get("GITHUB_TOKEN"):
+        print("warning: GITHUB_TOKEN not set, GitHub API calls are liable to be rate limited", file=sys.stderr)
+
     flake = FLAKE.read_text()
 
     latest = json.loads(fetch(f"https://api.github.com/repos/{REPO}/releases/latest"))
