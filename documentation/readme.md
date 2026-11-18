@@ -12,7 +12,7 @@
 
 
 
-# **md5-tools** -- lightweight Rust MD5/SHA tools
+# **md5-tools** -- lightweight Rust MD5/SHA tools - FORK
 
 
 > Table of contents:
@@ -26,6 +26,8 @@
 
 
 ## About
+
+[This fork](https://github.com/timabell/md5-tools) adds support for hashdeep has files, plus some other fiddling.
 
 This is a small collection of lightweight and efficient Rust-based tools related to the MD5 and SHA family hash files:
 
@@ -356,4 +358,3 @@ under a different license, please send an email to the authors,
 stating the licensing requirements, accompanied with the reasons
 and other details; then, depending on the situation, the authors might
 release the sources and/or documentation under a different license.
-
