@@ -911,7 +911,8 @@ fn entry_order_by_extent(
             _succeeded = false;
         }
         if _succeeded {
-            _succeeded = libc::ioctl(_file, FS_IOC_FIEMAP, &mut _fiemap as *mut _) == 0;
+            // `as _`: ioctl request is c_ulong on glibc but c_int on musl (musl build failed in CI)
+            _succeeded = libc::ioctl(_file, FS_IOC_FIEMAP as _, &mut _fiemap as *mut _) == 0;
         }
         if _file >= 0 {
             _succeeded = libc::close(_file) == 0;
