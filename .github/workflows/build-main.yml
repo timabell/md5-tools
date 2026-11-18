@@ -100,3 +100,8 @@ jobs:
     uses: ./.github/workflows/_release.yml
     with:
       release_tag: ${{ needs.check-release.outputs.release_tag }}
+
+  # Called directly: releases made with GITHUB_TOKEN don't trigger `release` events
+  update-nix-flake:
+    needs: release
+    uses: ./.github/workflows/update-nix-flake.yml
