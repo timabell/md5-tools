@@ -310,6 +310,29 @@ md5-copy <( tr '\n' '\0' < ./sources/.--2019-11-02-13-54-14.md5 ) ./sources /tmp
 ## Installing
 
 
+### Nix flake
+
+A Nix flake wrapping the prebuilt GitHub release binaries lives on the [`nix` branch](https://github.com/timabell/md5-tools/tree/nix) of this repo. It's auto-updated whenever a release is published.
+
+Run without installing:
+```
+nix run github:timabell/md5-tools/nix#md5-diff -- --help
+```
+
+Install into your profile (provides `md5-create`, `md5-diff` and `md5-cpio`):
+```
+nix profile install github:timabell/md5-tools/nix
+```
+
+Reference from a NixOS / home-manager flake:
+```nix
+inputs.md5-tools.url = "github:timabell/md5-tools/nix";
+# then: md5-tools.packages.${pkgs.system}.default
+```
+
+Supported systems: `x86_64-linux` only (musl-static, runs on NixOS without patching).
+
+
 ### Installing from sources
 
 Checkout the sources:
